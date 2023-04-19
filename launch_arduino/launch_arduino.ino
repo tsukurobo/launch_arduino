@@ -1,4 +1,4 @@
-#include "cubic_arduino.h"
+ #include "cubic_arduino.h"
 
 /*モーターの利用*/
 // put関数で各モータのduty比指定，duty比の符号反転で逆回転
@@ -21,13 +21,9 @@ void setup() {
   Serial.begin(115200);
 }
 
-int duty = 0;
-//int duty_up = 0;
-//int duty_down = 0;
-//int16_t duty[] = {-120, -153, -130};
-//int16_t duty[] = {220, 200, 150};
-bool state = 1;
+int duty = 0; // 750:720(3型)
 int rotate_duty = 250;
+bool state = 1;
 
 void loop() {
   // シリアル入力でdutyまたはstateの値を指定
@@ -38,50 +34,56 @@ void loop() {
     //DC_motor::put(i, duty);
     char mode = Serial.read();
 
-    //* duty一括指定
-    if (mode == 'd') {
+    if (mode == 'a') {
+      //* duty一括指定
       duty = Serial.readStringUntil('\n').toInt();
       DC_motor::put(0, -duty);
       DC_motor::put(1, duty);
       DC_motor::put(2, -duty);
       DC_motor::put(3, -duty);
-    } else if (mode == 'r') {
-      int now = millis();
-      while (millis() - now < 500) {
-        DC_motor::put(6, rotate_duty);
-        Cubic::update();
-        delay(1);
-      }
+    } else if (mode == 'u') {
+      //* duty上指定
+      duty_up = Serial.readStringUntil('\n').toInt();
+      DC_motor::put(1, duty);
+      DC_motor::put(3, -duty);
+     } else if (mode == 'd') {
+      //* duty下指定
+      duty_down = Serial.readStringUntil('\n').toInt();
+      DC_motor::put(0, -duty);
+      DC_motor::put(2, -duty);
+    } else if (mode == 'q') {
+      //* duty左指定
+      duty_up = Serial.readStringUntil('\n').toInt();
+      DC_motor::put(2, -duty);
+      DC_motor::put(3, -duty);
+     } else if (mode == 'w') {
+      //* duty右指定
+      duty_down = Serial.readStringUntil('\n').toInt();
+      DC_motor::put(0, -duty);
+      DC_motor::put(1, duty);
     } else if (mode == 'l') {
+      //* 左回転
       int now = millis();
-      while (millis() - now < 500) {
-        DC_motor::put(6, -rotate_duty);
+      while (millis() - now < 300) {
+        DC_motor::put(5, rotate_duty);
         Cubic::update();
         delay(1);
       }
+      DC_motor::put(5, 0);
+    } else if (mode == 'r') {
+      //* 右回転
+      int now = millis();
+      while (millis() - now < 300) {
+        DC_motor::put(5, -rotate_duty);
+        Cubic::update();
+        delay(1);
+      }
+      DC_motor::put(5, 0);
+    } else if (mode == 'e') {
+      //* duty昇降指定
+      duty = Serial.readStringUntil('\n').toInt();
+      DC_motor::put(4, duty);
     }
-
-    //* duty上下指定
-//    duty_up = Serial.readStringUntil(':').toInt();
-//    duty_down = Serial.readStringUntil('\n').toInt();
-//    DC_motor::put(0, -duty_down);
-//    DC_motor::put(1, duty_up);
-//    DC_motor::put(2, -duty_up);
-//    DC_motor::put(3, -duty_down);
-
-    
-    //*/
-    //state = Serial.readStringUntil('\n').toInt();
-    /*
-    String s = Serial.readStringUntil('\n');
-    if (s == "r") {
-      for (int i = 0; i < 3; i++) duty[i] *= -1;
-      DC_motor::put(0, duty[0]); DC_motor::put(2, duty[1]); DC_motor::put(6, duty[2]);
-    }    
-    else {
-      DC_motor::put(0, 0); DC_motor::put(2, 0); DC_motor::put(6, 0);
-    }
-    */
   }
 
   //for (int i = 0; i < 8; i++) {
@@ -97,10 +99,10 @@ void loop() {
   // すべてのアブソリュートエンコーダの値を表示
   // Abs_enc::print();
 
-  for (int i = 0; i < 4; i++) {
+  //for (int i = 0; i < 4; i++) {
     // 各ソレノイドの状態を格納
     // Solenoid::put(i, state);
-  }
+  //}
   // すべてのソレノイドの状態を表示
   //Solenoid::print();
 
