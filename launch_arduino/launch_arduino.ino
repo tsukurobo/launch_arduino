@@ -1,5 +1,7 @@
  #include "cubic_arduino.h"
 
+#define ROTATE 3
+#define LIFT 6
 /*モーターの利用*/
 // put関数で各モータのduty比指定，duty比の符号反転で逆回転
 // Dutyの最大値はデフォルトで1000
@@ -17,12 +19,12 @@
 
 void setup() {
   // すべてのモータ，エンコーダの初期化
-  Cubic::begin();
+  Cubic::begin(10.0);
   Serial.begin(115200);
 }
 
 int duty = 0; // 750:720(3型)
-int rotate_duty = 250;
+int rotate_duty = 50;
 bool state = 1;
 
 void loop() {
@@ -43,46 +45,46 @@ void loop() {
       DC_motor::put(3, -duty);
     } else if (mode == 'u') {
       //* duty上指定
-      duty_up = Serial.readStringUntil('\n').toInt();
+      duty = Serial.readStringUntil('\n').toInt();
       DC_motor::put(1, duty);
       DC_motor::put(3, -duty);
      } else if (mode == 'd') {
       //* duty下指定
-      duty_down = Serial.readStringUntil('\n').toInt();
+      duty = Serial.readStringUntil('\n').toInt();
       DC_motor::put(0, -duty);
       DC_motor::put(2, -duty);
     } else if (mode == 'q') {
       //* duty左指定
-      duty_up = Serial.readStringUntil('\n').toInt();
+      duty = Serial.readStringUntil('\n').toInt();
       DC_motor::put(2, -duty);
       DC_motor::put(3, -duty);
      } else if (mode == 'w') {
       //* duty右指定
-      duty_down = Serial.readStringUntil('\n').toInt();
+      duty = Serial.readStringUntil('\n').toInt();
       DC_motor::put(0, -duty);
       DC_motor::put(1, duty);
     } else if (mode == 'l') {
       //* 左回転
       int now = millis();
-      while (millis() - now < 300) {
-        DC_motor::put(5, rotate_duty);
+      while (millis() - now < 500) {
+        DC_motor::put(ROTATE, rotate_duty);
         Cubic::update();
-        delay(1);
+        // delay(1);
       }
-      DC_motor::put(5, 0);
+      DC_motor::put(ROTATE, 0);
     } else if (mode == 'r') {
       //* 右回転
       int now = millis();
-      while (millis() - now < 300) {
-        DC_motor::put(5, -rotate_duty);
+      while (millis() - now < 1000) {
+        DC_motor::put(ROTATE, -rotate_duty);
         Cubic::update();
-        delay(1);
+        // delay(1);
       }
-      DC_motor::put(5, 0);
+      DC_motor::put(ROTATE, 0);
     } else if (mode == 'e') {
       //* duty昇降指定
       duty = Serial.readStringUntil('\n').toInt();
-      DC_motor::put(4, duty);
+      DC_motor::put(LIFT, duty);
     }
   }
 
@@ -112,5 +114,5 @@ void loop() {
   // データの送受信を行う
   Cubic::update();
 
-  delay(1);
+  // delay(1);
 }
